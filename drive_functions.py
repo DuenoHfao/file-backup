@@ -32,22 +32,62 @@ def check_drives(
 
     return None, None
 
-def backup_files(
+def backup_files_to_drive(
         attached_drive_serial_number: int,
         backup_relative_path: str,
         path_to_backup: str,
         verbose: bool = False,
         dryrun: bool = False
     ) -> None:
+    """
+    Docstring for backup_files_to_drive
     
+    :param attached_drive_serial_number: Serial number for drive to backup to
+    :type attached_drive_serial_number: int
+    :param kwargs: Keyword arguments to pass to _backup_files()
+    """
     drive_letter, volume_name = check_drives(attached_drive_serial_number)
 
     if drive_letter is None:
         exit()
 
-    win32api.MessageBox(0, 'BACKUP IS STARTING', 'NOTICE!')
     new_path = os.path.join(drive_letter, (pathlib.Path(backup_relative_path) if backup_relative_path != "" else ""), os.path.basename(path_to_backup))
+    _backup_files(new_path, path_to_backup, verbose, dryrun)
+
+def backup_files_to_folder(
+        backup_folder_path: str,
+        backup_relative_path: str,
+        path_to_backup: str,
+        verbose: bool = False,
+        dryrun: bool = False
+    ) -> None:
+    """
+    Docstring for backup_files_to_folder
+    
+    :param folder_path: Path to save backup files
+    :type folder_path: str
+    :param backup_relative_path: Additional subfolders to backup to
+    :type backup_relative_path: str
+    :param path_to_backup: Folder to make a backup of
+    :type path_to_backup: str
+    :param verbose: Verbose
+    :type verbose: bool
+    :param dryrun: If True, does not save backups
+    :type dryrun: bool
+    """
+
+    new_path = os.path.join(backup_folder_path, (pathlib.Path(backup_relative_path) if backup_relative_path != "" else ""), os.path.basename(path_to_backup))
+    _backup_files(new_path, path_to_backup, verbose, dryrun)
+
+def _backup_files(
+        new_path: str,
+        path_to_backup: str,
+        verbose: bool = False,
+        dryrun: bool = False
+    ) -> None:
+
     print(f"Copying {path_to_backup} -> {new_path}")
+    win32api.MessageBox(0, f'{'BACKUP' if not dryrun else 'DRYRUN'} IS STARTING', 'NOTICE!')
 
     for (root, _, filenames) in os.walk(path_to_backup):
         for file in filenames:
