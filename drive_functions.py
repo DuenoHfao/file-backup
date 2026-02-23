@@ -90,6 +90,17 @@ def _backup_files(
     win32api.MessageBox(0, f'{'BACKUP' if not dryrun else 'DRYRUN'} IS STARTING', 'NOTICE!')
 
     for (root, _, filenames) in os.walk(path_to_backup):
+
+        system_file = False
+        root = root.replace("\\", "/")
+        for folder_name in root.split("/"):
+            if any(folder_name in sys_folders for sys_folders in ["node_modules", ".git", "venv"]) or folder_name[0] in [".", "_"]:
+                system_file = True
+                break
+
+        if system_file:
+            continue
+
         for file in filenames:
             original_filepath = os.path.join(root, file)
             relative_filepath = original_filepath[len(path_to_backup)+1:]
